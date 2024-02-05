@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'RobotoSlab';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Slab'),
+       url('../fonts/roboto-slab/roboto-slab-v23-latin_cyrillic-regular.woff2') format('woff2'),
+       url('../fonts/roboto-slab/roboto-slab-v23-latin_cyrillic-regular.woff') format('woff'),
+       url('../fonts/roboto-slab/roboto-slab-v23-latin_cyrillic-regular.ttf') format('truetype');
+  font-display: swap;
+}
