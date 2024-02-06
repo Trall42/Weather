@@ -1,10 +1,26 @@
 <template>
 <div class="header">
-  <CustomSearch
-    :searchedLocations="searchedLocations"
-    @searchDataEmit="(value) => getSearchData(value)"
-    @getDataToCoordinatesEmit="(value) => getDataToCoordinates(value)"
-  />
+  <div class="header-location">
+    <img src="../assets/icons/location.png" class="img-size" alt="location">
+    <span class="truncate">Paris</span>
+  </div>
+  <div class="header-search">
+    <img
+      v-if="!isShowSearchField"
+      src="../assets/icons/search.png"
+      class="img-size"
+      alt="location"
+      @click.stop="showHideSearchField()"
+    >
+    <CustomSearch
+      v-if="isShowSearchField"
+      class="header-search__field"
+      :searchedLocations="searchedLocations"
+      @searchDataEmit="(value) => getSearchData(value)"
+      @getDataToCoordinatesEmit="(value) => getDataToCoordinates(value)"
+      @blurField="showHideSearchField()"
+    />
+  </div>
 </div>
 </template>
 <script setup>
@@ -15,12 +31,17 @@ const $api = inject('$api')
 const searchLocation = ref('Київ')
 const timeoutPending = ref(null)
 const searchedLocations = ref([])
+const isShowSearchField = ref(false)
 const params = ref({
   cityName: 'Київ'
 })
 
 
 // ==================== function section ====================
+
+function showHideSearchField() {
+  isShowSearchField.value = !isShowSearchField.value
+}
 
 function getSearchData(value) {
   searchLocation.value = value
@@ -59,6 +80,7 @@ function saveDataToParams(value) {
 }
 
 // ===================== life hooks ====================
+
 onBeforeUnmount(() => {
   clearTimeout(timeoutPending.value)
 })
@@ -68,3 +90,44 @@ onMounted(async () => {
   await fetchAllWeather()
 })
 </script>
+
+<style lang="scss">
+.img-size {
+  display: flex;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+}
+.header {
+  border: 1px solid red;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  .header-location {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 150px;
+    span {
+      margin-left: 4px;
+      font-family: 'Roboto';
+      font-size: 16px;
+    }
+  }
+  .header-search {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    min-width: 153px;
+    img {
+      cursor: pointer;
+    }
+    .header-search__field {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+  }
+}
+</style>
