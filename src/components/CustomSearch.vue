@@ -1,11 +1,12 @@
 <script setup>
-import { ref, defineProps, watch, defineEmits } from 'vue'
+import { ref, defineProps, watch, defineEmits, onMounted } from 'vue'
 
 const props = defineProps(['searchedLocations'])
-const emit = defineEmits(['getDataToCoordinatesEmit', 'searchDataEmit'])
+const emit = defineEmits(['getDataToCoordinatesEmit', 'searchDataEmit', 'blurField'])
 
 const searchDataManually = ref('')
 const searchedLocationsManually = ref([])
+const searchField = ref(null)
 
 // ================== watch section =======================
 
@@ -22,21 +23,42 @@ function chooseLocation(value) {
 }
 
 function selectingLocation() {
-  console.log('Selecting', searchDataManually.value)
+  // console.log('Selecting', searchDataManually.value)
   emit("searchDataEmit", searchDataManually.value)
 }
+
+function setFocusInputField() {
+  searchField?.value?.focus()
+}
+
+function bluerFieldInput() {
+  if (!searchDataManually.value) emit('blurField')
+}
+
+// =================== life hooks =========================
+
+onMounted(() => {
+  setFocusInputField()
+})
 
 </script>
 
 <template>
 <div class="search-wrapper">
-  <input v-model='searchDataManually' type='text' @input='selectingLocation' @focus="selectingLocation">
+  <input
+    v-model='searchDataManually'
+    ref="searchField"
+    type='text'
+    @input='selectingLocation'
+    @focus="selectingLocation"
+    @blur="bluerFieldInput"
+  >
   <div v-if='searchedLocationsManually?.length && searchDataManually?.length' class="search-wrapper__popap">
     <div
       v-for='(location, index) in searchedLocationsManually'
       :key='index'
       @click.stop='chooseLocation(location)'
-      class="search-item"
+      class="search-item truncate"
     >
       {{ location?.display_name }}
     </div>
@@ -45,9 +67,11 @@ function selectingLocation() {
 </template>
 <style lang="scss">
 .search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
   input {
     width: 100%;
-    max-width: 200px;
     height: 28px;
     border-radius: 8px;
     border: 2px solid grey;
@@ -55,7 +79,9 @@ function selectingLocation() {
     padding: 0 8px;
   }
   .search-wrapper__popap {
-    margin-top: 4px;
+    position: absolute;
+    top: 32px;
+    left: 0;
     padding: 16px;
     border-radius: 10px;
     width: 100%;
@@ -69,9 +95,6 @@ function selectingLocation() {
     margin-bottom: 6px;
     border-bottom: 1px solid grey;
     width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     &:hover {
       cursor: pointer;
       background: rgba(128, 128, 128, 0.4);
