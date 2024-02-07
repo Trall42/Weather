@@ -2,7 +2,7 @@
 <div class="header">
   <div class="header-location">
     <img src="../assets/icons/location.png" class="img-size" alt="location">
-    <span class="truncate">Paris</span>
+    <span class="truncate">{{ curentWetherData.name }}</span>
   </div>
   <div class="header-search">
     <img
@@ -13,8 +13,8 @@
       @click.stop="showHideSearchField()"
     >
     <CustomSearch
-      v-if="isShowSearchField"
-      class="header-search__field"
+      :class="isShowSearchField ? 'header-search__field' : 'header-search__field--hide'"
+      :isShowSearchField="isShowSearchField"
       :searchedLocations="searchedLocations"
       @searchDataEmit="(value) => getSearchData(value)"
       @getDataToCoordinatesEmit="(value) => getDataToCoordinates(value)"
@@ -32,9 +32,12 @@ const searchLocation = ref('Київ')
 const timeoutPending = ref(null)
 const searchedLocations = ref([])
 const isShowSearchField = ref(false)
+const curentWetherData = ref({})
 const params = ref({
   cityName: 'Київ'
 })
+
+
 
 
 // ==================== function section ====================
@@ -54,7 +57,8 @@ function getSearchData(value) {
 async function fetchAllWeather() {
   try {
     const response = await $api.allWeather.getWeather(params?.value)
-    console.log('Response Data City', response)
+    if (response.status === 200) curentWetherData.value = response.data
+    console.log('Response Data City', curentWetherData.value)
   } catch (error) {
     console.error('Error fetching fetchAllWeather:', error);
   }
@@ -111,8 +115,10 @@ onMounted(async () => {
     min-width: 150px;
     span {
       margin-left: 4px;
+      font-size: 18px;
+      font-weight: 400;
       font-family: 'Roboto';
-      font-size: 16px;
+      color: $white;
     }
   }
   .header-search {
@@ -124,9 +130,15 @@ onMounted(async () => {
       cursor: pointer;
     }
     .header-search__field {
+      transition: all 0.5s ease-out;
       display: flex;
       justify-content: flex-end;
       width: 100%;
+      &--hide {
+        width: 0;
+        opacity: 0;
+        transition: all 0.5s ease-out;
+      }
     }
   }
 }

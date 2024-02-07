@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineProps, watch, defineEmits, onMounted } from 'vue'
 
-const props = defineProps(['searchedLocations'])
+const props = defineProps(['searchedLocations', 'isShowSearchField'])
 const emit = defineEmits(['getDataToCoordinatesEmit', 'searchDataEmit', 'blurField'])
 
 const searchDataManually = ref('')
@@ -13,6 +13,10 @@ const searchField = ref(null)
 watch(() => props?.searchedLocations, (value) => {
   searchedLocationsManually.value = value
 }, { immediate: true })
+
+watch(() => props?.isShowSearchField, (value) => {
+  if (value) setFocusInputField()
+})
 
 // ================== function section ====================
 
@@ -38,7 +42,7 @@ function bluerFieldInput() {
 // =================== life hooks =========================
 
 onMounted(() => {
-  setFocusInputField()
+  // setFocusInputField()
 })
 
 </script>
@@ -75,7 +79,7 @@ onMounted(() => {
     height: 28px;
     border-radius: 8px;
     border: 2px solid grey;
-    background: rgba(128, 128, 128, 0.2);
+    background: rgba(128, 128, 128, 0.8);
     padding: 0 8px;
   }
   .search-wrapper__popap {
@@ -87,7 +91,7 @@ onMounted(() => {
     width: 100%;
     max-width: 300px;
     border: 1px solid grey;
-    background: rgba(128, 128, 128, 0.1);
+    background: rgba(128, 128, 128, 0.8);
     max-height: 300px;
     overflow-y: auto;
   }
