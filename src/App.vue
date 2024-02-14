@@ -1,17 +1,16 @@
 <template>
   <div class="app">
-    <HeaderBlock />
+    <RootBlock />
   </div>
 </template>
 
 <script setup>
-import HeaderBlock from './components/HeaderBlock.vue'
+import RootBlock from './components/RootBlock.vue'
 </script>
 <style lang="scss">
 html {
   background: black;
 }
-
 
 .app {
   padding: 24px;
