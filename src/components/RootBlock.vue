@@ -171,6 +171,8 @@ onMounted(async () => {
 .weather-wrapper {
   width: 100%;
   height: 100%;
+  max-width: 768px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   .weather-main-data {
@@ -301,6 +303,18 @@ onMounted(async () => {
 }
 
 @media (min-width: 760px) {
+  .weather-wrapper {
+    padding: 24px;
+    border: 1px solid rgb(197, 197, 197);
+    border-radius: 15px;
+    background: rgba(128, 139, 146, 0.2);
+    box-shadow: 0px 0px 40px 2px rgb(37, 37, 37);
+    .weather-simple-data {
+      padding: 16px;
+      border-radius: 15px;
+      background: rgba(48, 48, 48, 0.4);
+    }
+  }
   .header .header-search__mobile {
     display: none;
   }

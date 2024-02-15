@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div id="app" class="app">
     <RootBlock />
   </div>
 </template>
@@ -9,15 +9,23 @@ import RootBlock from './components/RootBlock.vue'
 </script>
 <style lang="scss">
 html {
-  background: black;
+  background: $white !important;
 }
 
 .app {
-  padding: 24px;
   width: 100%;
   height: 100vh;
-  max-width: 1440px;
-  margin: 0 auto;
-  background: green;
+  background-image: url('/src/assets/img/cities/city-1.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding: 24px;
+}
+@media(min-width: 768px) {
+  .app {
+    background-image: url('/src/assets/img/weather_wallpaper/summer.webp');
+    // background-repeat: no-repeat;
+    // background-size: cover;
+    // padding: 24px;
+  }
 }
 </style>
