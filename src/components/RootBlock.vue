@@ -82,6 +82,16 @@ const params = ref({
 })
 const currentDate = ref('')
 const iconWeather = ref(null)
+const weatherToDaysData = ref([])
+const weatherToDaysList = ref([])
+// const weatherToDaysList = ref({
+//   currentDay: [],
+//   dayOne: [],
+//   dayTwo: [],
+//   dayThre: [],
+//   dayFoure: [],
+//   dayFive: [],
+// })
 
 // ==================== function section ====================
 
@@ -119,6 +129,7 @@ async function fetchAllWeather() {
       nextTick( async () => {
         formatData()
         await getWetherIcon(curentWetherData?.value?.weather[0]?.icon)
+        await getWeatherForFiveDays(params?.value)
       })
     }
     console.log('Response Data City', curentWetherData.value)
@@ -144,6 +155,39 @@ async function getWetherIcon(iconCode) {
   } catch (error) {
     console.error('Error getting icon weather', error);
   }
+}
+
+async function getWeatherForFiveDays() {
+  try {
+    const response = await $api.getWeatherForSeveralDays.getWeatherForSeveralDays(params?.value)
+    if (response?.status === 200) {
+      weatherToDaysData.value = response.data
+      nextTick(() => {
+        breakDownTheDataByDay()
+      })
+    }
+  } catch (error) {
+    console.error('Error getting weather for days', error);
+  }
+}
+
+function breakDownTheDataByDay() {
+  let firstDate = ''
+  let numberOfDay = 0
+  weatherToDaysList.value[numberOfDay] = []
+  weatherToDaysData?.value?.list?.forEach((element) => {
+    if (!weatherToDaysList.value[numberOfDay]?.length) {
+      weatherToDaysList.value[numberOfDay].push(element)
+      firstDate = element?.dt_txt?.slice(7, 10)
+    }
+    if (firstDate !== element?.dt_txt?.slice(7, 10)) {
+      numberOfDay = numberOfDay + 1
+      if (weatherToDaysList.value[numberOfDay] === undefined) weatherToDaysList.value[numberOfDay] = []
+      weatherToDaysList.value[numberOfDay].push(element)
+      firstDate = element?.dt_txt?.slice(7, 10)
+    } else weatherToDaysList.value[numberOfDay].push(element)
+  })
+  console.log('Element list', weatherToDaysList.value)
 }
 
 async function getDataToCoordinates(value) {
@@ -177,11 +221,11 @@ onMounted(async () => {
   flex-direction: column;
   .weather-main-data {
     width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     flex-direction: column;
-    justify-content: center;
+    margin: auto 0;
+    overflow-y: auto;
     .weather-main-data__date {
       color: $white;
       font-weight: 500;
@@ -270,6 +314,7 @@ onMounted(async () => {
       font-weight: 400;
       font-family: 'Roboto';
       color: $white;
+      text-shadow: rgb(68, 68, 68) 1px 3px 4px;
     }
   }
   .header-search__mobile {
