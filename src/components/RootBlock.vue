@@ -3,7 +3,7 @@
   <div class="header">
     <div class="header-location">
       <img src="../assets/icons/location.png" class="img-size" alt="location">
-      <span class="truncate">{{ curentWetherData.name }}</span>
+      <span class="truncate">{{ curentWetherData.name || 'N/A' }}</span>
     </div>
     <div class="header-search__mobile">
       <img
@@ -38,7 +38,7 @@
     </div>
     <div class="weather-main-data__status">
       <img :src="iconWeather" alt="weather">
-      <div> {{ curentWetherData?.weather?.[0]?.main }} </div>
+      <div> {{ curentWetherData?.weather?.[0]?.main || 'N/A' }} </div>
       <div>
         {{ Math.round(curentWetherData?.main?.temp) || 0 }}
         <div class="gradus-c">
@@ -84,14 +84,6 @@ const currentDate = ref('')
 const iconWeather = ref(null)
 const weatherToDaysData = ref([])
 const weatherToDaysList = ref([])
-// const weatherToDaysList = ref({
-//   currentDay: [],
-//   dayOne: [],
-//   dayTwo: [],
-//   dayThre: [],
-//   dayFoure: [],
-//   dayFive: [],
-// })
 
 // ==================== function section ====================
 
@@ -122,27 +114,30 @@ function getSearchData(value) {
 }
 
 async function fetchAllWeather() {
-  try {
-    const response = await $api.allWeather.getWeather(params?.value)
-    if (response.status === 200) {
-      curentWetherData.value = response.data
-      nextTick( async () => {
-        formatData()
-        await getWetherIcon(curentWetherData?.value?.weather[0]?.icon)
-        await getWeatherForFiveDays(params?.value)
-      })
-    }
-    console.log('Response Data City', curentWetherData.value)
-  } catch (error) {
-    console.error('Error fetching fetchAllWeather:', error);
-  }
+  await getWeatherForFiveDays(params?.value)
+  await getWetherIcon(curentWetherData?.value?.weather[0]?.icon)
+  formatData()
+  // try {
+  //   const response = await $api.allWeather.getWeather(params?.value)
+  //   if (response.status === 200) {
+  //     curentWetherData.value = response.data
+  //     nextTick( async () => {
+  //       formatData()
+  //       await getWetherIcon(curentWetherData?.value?.weather[0]?.icon)
+  //       await getWeatherForFiveDays(params?.value)
+  //     })
+  //   }
+  //   console.log('Response Data City', curentWetherData.value)
+  // } catch (error) {
+  //   console.error('Error fetching fetchAllWeather:', error);
+  // }
 }
 
 async function getLocationCity() {
   try {
     const response = await $api.getLocation.getLocation(searchLocation.value)
     if (response.status === 200) searchedLocations.value = response.data
-    console.log('Response Location', searchedLocations.value)
+    // console.log('Response Location', searchedLocations.value[0].name)
   } catch (error) {
     console.error('Error gettind location:', error);
   }
@@ -187,6 +182,8 @@ function breakDownTheDataByDay() {
       firstDate = element?.dt_txt?.slice(7, 10)
     } else weatherToDaysList.value[numberOfDay].push(element)
   })
+  curentWetherData.value = weatherToDaysList?.value[0][0]
+  curentWetherData.value.name = searchedLocations?.value[0]?.name
   console.log('Element list', weatherToDaysList.value)
 }
 
