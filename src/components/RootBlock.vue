@@ -1,5 +1,12 @@
 <template>
 <div class="weather-wrapper">
+  <div
+    class="error-section"
+    :class="{ 'error-section--show' : isError }"
+  >
+    <img src="../assets/icons/search-error.png  " alt="error">
+    <span class="truncate">{{ errorMessage || Error }}</span>
+  </div>
   <div class="header">
     <div class="header-location">
       <img src="../assets/icons/location.png" class="img-size" alt="location">
@@ -34,10 +41,10 @@
   </div>
   <div class="weather-main-data">
     <div class="weather-main-data__date">
-      {{ currentDate }}
+      {{ formatData(curentWetherData?.value?.dt) }}
     </div>
     <div class="weather-main-data__status">
-      <img :src="iconWeather" alt="weather">
+      <img :src="iconWeatherList[0]" alt="weather">
       <div> {{ curentWetherData?.weather?.[0]?.main || 'N/A' }} </div>
       <div>
         {{ Math.round(curentWetherData?.main?.temp) || 0 }}
@@ -46,7 +53,7 @@
         </div>
       </div>
     </div>
-    <div class="weather-simple-data">
+    <div class="weather-main-data__simple">
       <div>
         <img src="../assets/icons/humidity.png" alt="humidity">
         <span>HUMIDITI</span>
@@ -63,33 +70,56 @@
         <span>{{ curentWetherData?.main?.feels_like || 0 }} &deg;</span>
       </div>
     </div>
+    <div v-if="weatherToDaysList.length" class="weather-main-data__days-wrapper">
+      <div
+        v-for="(day, index) in weatherToDaysList"
+        :key="index"
+        class="weather-main-data__day"
+      >
+        <div class="weather-main-data__day-date">
+          {{ formatData(day[0]?.dt) }}
+        </div>
+        <div>
+          <img :src="iconWeatherList[index]" alt="weather icon">
+        </div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
   </div>
   <div class="weather-days"></div>
 </div>
 </template>
 <script setup>
 import CustomSearch from './CustomSearch.vue'
-import { onBeforeUnmount, onMounted, ref, inject, nextTick } from 'vue'
+import { onBeforeUnmount, onMounted, ref, computed, inject, nextTick } from 'vue'
 
 const $api = inject('$api')
 const searchLocation = ref('Київ')
 const timeoutPending = ref(null)
+const timeoutPendingError = ref(null)
 const searchedLocations = ref([])
 const isShowSearchField = ref(false)
 const curentWetherData = ref({})
 const params = ref({
   cityName: 'Київ'
 })
-const currentDate = ref('')
-const iconWeather = ref(null)
+const iconWeatherList = ref([])
 const weatherToDaysData = ref([])
 const weatherToDaysList = ref([])
+const errorMessage = ref('')
+
+// ==================== computed section ====================
+
+const isError = computed(() => {
+  return !!errorMessage?.value?.length
+})
 
 // ==================== function section ====================
 
 
-function formatData() {
-  const unixTimestamp = curentWetherData?.value?.dt
+function formatData(dataTime = 0) {
+  const unixTimestamp = dataTime
   const milliseconds = unixTimestamp * 1000
   const date = new Date(milliseconds)
   const monthIndex = date.getMonth() + 1
@@ -98,7 +128,7 @@ function formatData() {
     'January', 'February', 'March', 'April', 'May', 'June', 
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  currentDate.value = `${monthNames[monthIndex]?.toString().padStart(2, '0')} ${day.toString().padStart(2, '0')}`
+  return `${monthNames[monthIndex]?.toString().padStart(2, '0')} ${day.toString().padStart(2, '0')}`
 }
 
 function showHideSearchField() {
@@ -110,13 +140,12 @@ function getSearchData(value) {
   clearTimeout(timeoutPending.value)
   timeoutPending.value = setTimeout(async () => {
     await getLocationCity()
-  }, 500)
+  }, 400)
 }
 
 async function fetchAllWeather() {
   await getWeatherForFiveDays(params?.value)
-  await getWetherIcon(curentWetherData?.value?.weather[0]?.icon)
-  formatData()
+  // formatData()
   // try {
   //   const response = await $api.allWeather.getWeather(params?.value)
   //   if (response.status === 200) {
@@ -137,22 +166,23 @@ async function getLocationCity() {
   try {
     const response = await $api.getLocation.getLocation(searchLocation.value)
     if (response.status === 200) searchedLocations.value = response.data
-    // console.log('Response Location', searchedLocations.value[0].name)
   } catch (error) {
     console.error('Error gettind location:', error);
   }
 }
 
 async function getWetherIcon(iconCode) {
+  iconWeatherList.value = []
   try {
     const response = await $api.getWeatherIcon.getWeatherIcon(iconCode)
-    iconWeather.value = response.config.url
+    iconWeatherList.value.push(response.config.url)
   } catch (error) {
     console.error('Error getting icon weather', error);
   }
 }
 
 async function getWeatherForFiveDays() {
+  clearTimeout(timeoutPendingError.value)
   try {
     const response = await $api.getWeatherForSeveralDays.getWeatherForSeveralDays(params?.value)
     if (response?.status === 200) {
@@ -162,7 +192,12 @@ async function getWeatherForFiveDays() {
       })
     }
   } catch (error) {
+    errorMessage.value = error.response.data.message
     console.error('Error getting weather for days', error);
+  } finally {
+    timeoutPendingError.value = setTimeout(() => {
+      errorMessage.value = ''
+    }, 2000)
   }
 }
 
@@ -185,6 +220,15 @@ function breakDownTheDataByDay() {
   curentWetherData.value = weatherToDaysList?.value[0][0]
   curentWetherData.value.name = searchedLocations?.value[0]?.name
   console.log('Element list', weatherToDaysList.value)
+  if (curentWetherData.value) createIconsList()
+}
+
+function createIconsList() {
+  weatherToDaysList.value.forEach(async (item) => {
+    console.log('item[0]?.weather[0]?.icon', item[0]?.weather[0]?.icon)
+    if(item[12]?.weather[0]?.icon) await getWetherIcon(item[12]?.weather[0]?.icon)
+    else await getWetherIcon(item[0]?.weather[0]?.icon)
+  })
 }
 
 async function getDataToCoordinates(value) {
@@ -200,6 +244,7 @@ function saveDataToParams(value) {
 
 onBeforeUnmount(() => {
   clearTimeout(timeoutPending.value)
+  clearTimeout(timeoutPendingError.value)
 })
 
 onMounted(async () => {
@@ -210,12 +255,47 @@ onMounted(async () => {
 
 <style lang="scss">
 .weather-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
   max-width: 768px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  .error-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 0;
+    height: 60px;
+    overflow: hidden;
+    border-radius: 10px;
+    opacity: 0;
+    border: 1px solid red;
+    background: rgb(187, 171, 171);
+    transition: all 0.5s ease-out;
+    img {
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+    }
+    span {
+      display: flex;
+      text-align: center;
+      align-items: center;
+      font-family: 'Roboto';
+      font-size: $font-size-16;
+      color: $red;
+    }
+    &--show {
+      width: 200px;
+      opacity: 1;
+      transition: all 0.5s ease-out;
+    }
+  }
   .weather-main-data {
     width: 100%;
     display: flex;
@@ -256,7 +336,7 @@ onMounted(async () => {
         }
       }
     }
-    .weather-simple-data {
+    .weather-main-data__simple {
       display: flex;
       justify-content: space-between;
       width: 100%;
@@ -284,6 +364,34 @@ onMounted(async () => {
         font-size: $font-size-14;
         font-weight: 500;
         text-shadow: rgb(68, 68, 68) 1px 3px 4px;
+      }
+    }
+    .weather-main-data__days-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      height: 100px;
+      margin-top: 50px;
+      padding: 16px;
+      border-radius: 15px;
+      border: 1px solid $grey-53;
+      background: rgba(48, 48, 48, 0.4);
+      .weather-main-data__day-date {
+        font-family: 'Roboto';
+        font-size: $font-size-14;
+        color: $white;
+      }
+      .weather-main-data__day {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        img {
+          width: 42px;
+          height: 47px;
+        }
       }
     }
   }
@@ -350,11 +458,13 @@ onMounted(async () => {
     border: 1px solid rgb(197, 197, 197);
     border-radius: 15px;
     background: rgba(128, 139, 146, 0.2);
+    // background: rgba(48, 48, 48, 0.4);
     box-shadow: 0px 0px 40px 2px rgb(37, 37, 37);
-    .weather-simple-data {
-      padding: 16px;
-      border-radius: 15px;
-      background: rgba(48, 48, 48, 0.4);
+    .weather-main-data__simple {
+      // padding: 16px;
+      // border-radius: 15px;
+      // border: 1px solid $grey-53;
+      // background: rgba(48, 48, 48, 0.4);
     }
   }
   .header .header-search__mobile {

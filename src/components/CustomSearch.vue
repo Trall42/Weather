@@ -37,6 +37,10 @@ function setFocusInputField() {
 
 function bluerFieldInput() {
   if (!searchDataManually.value) emit('blurField')
+  console.log('searchDataManually.value', searchDataManually.value)
+  setTimeout(() => {
+    searchedLocationsManually.value = []
+  }, 200)
 }
 
 // =================== life hooks =========================
