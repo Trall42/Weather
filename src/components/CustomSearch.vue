@@ -27,7 +27,6 @@ function chooseLocation(value) {
 }
 
 function selectingLocation() {
-  // console.log('Selecting', searchDataManually.value)
   emit("searchDataEmit", searchDataManually.value)
 }
 
@@ -37,7 +36,6 @@ function setFocusInputField() {
 
 function bluerFieldInput() {
   if (!searchDataManually.value) emit('blurField')
-  console.log('searchDataManually.value', searchDataManually.value)
   setTimeout(() => {
     searchedLocationsManually.value = []
   }, 200)
