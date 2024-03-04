@@ -258,12 +258,12 @@ onMounted(async () => {
 .weather-wrapper {
   position: relative;
   width: 100%;
-  height: 100%;
   max-width: 768px;
   margin: 0 auto;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  flex: 1 auto;
   .error-section {
     display: flex;
     align-items: center;
@@ -304,7 +304,7 @@ onMounted(async () => {
     align-items: center;
     flex-direction: column;
     margin: auto 0;
-    overflow-y: auto;
+    padding: 24px 0;
     .weather-main-data__date {
       color: $white;
       font-weight: 500;
@@ -479,7 +479,9 @@ onMounted(async () => {
 
 @media (min-width: 760px) {
   .weather-wrapper {
+    max-height: 1000px;
     padding: 24px;
+    margin: 16px auto;
     border: 1px solid rgb(197, 197, 197);
     border-radius: 15px;
     background: rgba(128, 139, 146, 0.2);
