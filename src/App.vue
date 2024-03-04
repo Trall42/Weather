@@ -17,7 +17,6 @@ html {
   background-image: url('/src/assets/img/cities/city-1.png');
   background-repeat: no-repeat;
   background-size: cover;
-  padding: 24px;
 }
 @media(min-width: 768px) {
   .app {

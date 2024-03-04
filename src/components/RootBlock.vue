@@ -263,7 +263,7 @@ onMounted(async () => {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 16px;
   .error-section {
     display: flex;
     align-items: center;
@@ -466,6 +466,7 @@ onMounted(async () => {
     }
     .header-search__img--hide,
     .header-search__field--hide {
+      padding: 0px;
       width: 0;
       opacity: 0;
       transition: all 0.5s ease-out;
